@@ -770,14 +770,16 @@ $("#wordsInput").on("beforeinput", function (event) {
 });
 
 $("#wordsInput").on("input", function (event) {
+  let inputValue = event.target.value.normalize();
+
   // if characters inserted or replaced
   if (
-    event.target.value.length >= inputValueBeforeChange.length ||
-    event.target.value !== inputValueBeforeChange.slice(0, event.target.value.length)
+    inputValue.length >= inputValueBeforeChange.length ||
+    inputValue !== inputValueBeforeChange.slice(0, inputValue.length)
   ) {
     handleLastChar();
   } else {
-    if (event.target.value === "") {
+    if (inputValue === "") {
       // fallback for when no Backspace keydown event (mobile)
       event.target.value = " ";
       backspaceToPrevious();
