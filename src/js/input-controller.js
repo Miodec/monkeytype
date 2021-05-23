@@ -784,10 +784,12 @@ $("#wordsInput").on("input", function (event) {
       Replay.addReplayEvent("backWord");
     } else {
       TestUI.updateWordElement();
-      Replay.addReplayEvent(
-        "setWordLetterIndex",
-        TestLogic.input.current.length
-      );
+      if (!Misc.trailingComposeChars.test(inputValue)) {
+        Replay.addReplayEvent(
+          "setWordLetterIndex",
+          TestLogic.input.current.length
+        );
+      }
     }
   }
 
