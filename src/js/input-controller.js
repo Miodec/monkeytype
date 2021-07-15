@@ -152,7 +152,6 @@ function handleSpace() {
 
   const inputWord = TestLogic.input.current.slice(0, -1);
 
-  // handleLastChar() will decide if it gets inserted as character on start of word or not
   if (inputWord === "") return;
 
   if (Config.mode == "zen") {
@@ -344,7 +343,9 @@ function handleSpace() {
   }
 }
 
-function isCharCorrect(char) {
+function isCharCorrectAt(charIndex) {
+  const char = TestLogic.input.current[charIndex];
+
   if (
     Config.oppositeShiftMode === "on" &&
     ShiftTracker.isUsingOppositeShift(char) === false
@@ -356,9 +357,7 @@ function isCharCorrect(char) {
     return true;
   }
 
-  const originalChar = TestLogic.words
-    .getCurrent()
-    .charAt(TestLogic.input.current.length - 1);
+  const originalChar = TestLogic.words.getCurrent()[charIndex];
 
   if (originalChar == char) {
     return true;
@@ -396,14 +395,13 @@ function isCharCorrect(char) {
   return false;
 }
 
-function handleLastChar() {
+function handleCharAt(charIndex) {
   if (TestUI.resultCalculating || TestUI.resultVisible) {
     TestLogic.input.dropLastChar();
     return;
   }
 
-  let char =
-    TestLogic.input.current[TestLogic.input.current.length - 1];
+  let char = TestLogic.input.current[charIndex];
 
   if (char === "\n" && Config.funbox === "58008") {
     char = " ";
@@ -439,7 +437,7 @@ function handleLastChar() {
   Focus.set(true);
   Caret.stopAnimation();
 
-  let thisCharCorrect = isCharCorrect(char);
+  let thisCharCorrect = isCharCorrectAt(charIndex);
 
   if (!thisCharCorrect && Misc.trailingComposeChars.test(char)) {
     TestUI.updateWordElement();
@@ -734,13 +732,7 @@ $("#wordsInput").on("beforeinput", function (event) {
 $("#wordsInput").on("input", function (event) {
   let inputValue = event.target.value.normalize();
 
-  // if characters inserted or replaced
-  if (
-    inputValue.length >= inputValueBeforeChange.length ||
-    inputValue !== inputValueBeforeChange.slice(0, inputValue.length)
-  ) {
-    handleLastChar();
-  } else {
+  if (inputValue.length < inputValueBeforeChange.length) {
     if (inputValue === "") {
       // fallback for when no Backspace keydown event (mobile)
       event.target.value = " ";
@@ -753,6 +745,17 @@ $("#wordsInput").on("input", function (event) {
           "setWordLetterIndex",
           TestLogic.input.current.length
         );
+      }
+    }
+  } else if (inputValue !== inputValueBeforeChange) {
+    let diffStart = 0;
+    while (inputValue[diffStart] === inputValueBeforeChange[diffStart])
+      diffStart++;
+
+    if (diffStart) {
+      for (let i = diffStart; i < inputValue.length; i++) {
+        // offset by 1 because of the padding space at the start of TestLogic.input.current
+        handleCharAt(i - 1);
       }
     }
   }
