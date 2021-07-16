@@ -202,7 +202,6 @@ function handleSpace() {
     TestUI.setCurrentWordElementIndex(TestUI.currentWordElementIndex + 1);
     TestUI.updateActiveElement();
     Funbox.toggleScript(TestLogic.words.getCurrent());
-    Caret.updatePosition();
     TestStats.incrementKeypressCount();
     TestStats.pushKeypressWord(TestLogic.words.currentIndex);
     if (Config.funbox !== "nospace") {
@@ -240,7 +239,6 @@ function handleSpace() {
         TestLogic.input.current += " ";
         Replay.addReplayEvent("incorrectLetter", "_");
         TestUI.updateWordElement(true);
-        Caret.updatePosition();
       }
       return;
     }
@@ -253,7 +251,6 @@ function handleSpace() {
     TestUI.setCurrentWordElementIndex(TestUI.currentWordElementIndex + 1);
     TestUI.updateActiveElement();
     Funbox.toggleScript(TestLogic.words.getCurrent());
-    Caret.updatePosition();
     TestStats.incrementKeypressCount();
     TestStats.pushKeypressWord(TestLogic.words.currentIndex);
     TestStats.updateLastKeypress();
@@ -312,8 +309,6 @@ function handleSpace() {
       TestUI.lineJump(currentTop);
     }
   } //end of line wrap
-
-  // Caret.updatePosition();
 
   if (Config.keymapMode === "react") {
     Keymap.flashKey("Space", true);
