@@ -597,28 +597,7 @@ function handleLastChar() {
   }
 }
 
-$(document).keyup((event) => {
-  if (!event.originalEvent.isTrusted) return;
-
-  if (TestUI.resultVisible) return;
-  let now = performance.now();
-  let diff = Math.abs(TestStats.keypressTimings.duration.current - now);
-  if (TestStats.keypressTimings.duration.current !== -1) {
-    TestStats.pushKeypressDuration(diff);
-  }
-  TestStats.setKeypressDuration(now);
-  Monkey.stop();
-});
-
 $(document).keydown(function (event) {
-  if (!event.originalEvent.isTrusted) return;
-
-  if (!TestUI.resultVisible) {
-    TestStats.recordKeypressSpacing();
-  }
-
-  Monkey.type();
-
   //autofocus
   let wordsFocused = $("#wordsInput").is(":focus");
   const pageTestActive = !$(".pageTest").hasClass("hidden");
@@ -657,7 +636,7 @@ $(document).keydown(function (event) {
 
   if (!wordsFocused) return;
 
-  if (TestUI.testRestarting) {
+  if (!event.originalEvent.isTrusted || TestUI.testRestarting) {
     event.preventDefault();
     return;
   }
@@ -674,6 +653,9 @@ $(document).keydown(function (event) {
     }
   }
 
+  Monkey.type();
+
+  TestStats.recordKeypressSpacing();
   TestStats.setKeypressDuration(performance.now());
 
   if (event.key === "Backspace") {
@@ -762,6 +744,22 @@ $(document).keydown(function (event) {
       triggerInputWith(char);
     }
   }
+});
+
+$("#wordsInput").keyup((event) => {
+  if (!event.originalEvent.isTrusted) {
+    event.preventDefault();
+    return;
+  }
+
+  if (TestUI.resultVisible) return;
+  let now = performance.now();
+  let diff = Math.abs(TestStats.keypressTimings.duration.current - now);
+  if (TestStats.keypressTimings.duration.current !== -1) {
+    TestStats.pushKeypressDuration(diff);
+  }
+  TestStats.setKeypressDuration(now);
+  Monkey.stop();
 });
 
 function triggerInputWith(string) {
