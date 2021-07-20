@@ -788,8 +788,12 @@ $("#wordsInput").on("input", function (event) {
     TestLogic.input.current !== inputValueBeforeChange.slice(0, TestLogic.input.current.length)
   ) {
     handleLastChar();
-  } else {
+  } else if (inputValueBeforeChange.length > 0) {
     TestUI.updateWordElement();
+    Replay.addReplayEvent(
+      "setWordLetterIndex",
+      TestLogic.input.current.length
+    );
   }
 
   setTimeout(Caret.updatePosition, 0);
