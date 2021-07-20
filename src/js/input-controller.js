@@ -26,7 +26,7 @@ import * as MonkeyPower from "./monkey-power";
 import * as WeakSpot from "./weak-spot";
 
 let dontInsertSpace = false;
-let inputValueBeforeChange = "";
+let inputValueBeforeChange = " ";
 
 function handleTab(event) {
   if (TestUI.resultCalculating) {
@@ -97,13 +97,12 @@ function handleTab(event) {
   }
 }
 
-function setupBackspace(event) {
+function backspaceToPrevious() {
   if (!TestLogic.active) return;
 
   Sound.playClick(Config.playSoundOnClick);
 
   if (
-    TestLogic.input.current.length > 0 ||
     TestLogic.input.history.length == 0 ||
     TestUI.currentWordElementIndex == 0
   )
@@ -115,20 +114,18 @@ function setupBackspace(event) {
       !Config.freedomMode) ||
     $($(".word")[TestLogic.words.currentIndex - 1]).hasClass("hidden")
   ) {
-    event.preventDefault();
     return;
   }
 
   if (Config.confidenceMode === "on" || Config.confidenceMode === "max") {
-    event.preventDefault();
     return;
   }
 
   TestLogic.input.current = TestLogic.input.popHistory();
   TestLogic.corrected.popHistory();
 
-  if (Config.funbox !== "nospace") {
-    TestLogic.input.current += " ";
+  if (Config.funbox === "nospace") {
+    TestLogic.input.current = TestLogic.input.current.slice(0, -1);
   }
 
   TestLogic.words.decreaseCurrentIndex();
@@ -136,9 +133,7 @@ function setupBackspace(event) {
   TestUI.updateActiveElement(true);
   Funbox.toggleScript(TestLogic.words.getCurrent());
 
-  if (Config.keymapMode === "react") {
-    Keymap.flashKey(event.code, true);
-  } else if (Config.keymapMode === "next" && Config.mode !== "zen") {
+  if (Config.keymapMode === "next" && Config.mode !== "zen") {
     Keymap.highlightKey(
       TestLogic.words
         .getCurrent()
@@ -658,8 +653,10 @@ $(document).keydown(function (event) {
   TestStats.recordKeypressSpacing();
   TestStats.setKeypressDuration(performance.now());
 
-  if (event.key === "Backspace") {
-    setupBackspace(event);
+  if (event.key === "Backspace" && TestLogic.input.current.length === 0) {
+    backspaceToPrevious();
+    Replay.addReplayEvent("backWord");
+    TestLogic.input.current += " ";
   }
 
   if (event.key === "Enter") {
@@ -775,16 +772,23 @@ $("#wordsInput").on("beforeinput", function (event) {
 $("#wordsInput").on("input", function (event) {
   // if characters inserted or replaced
   if (
-    TestLogic.input.current.length >= inputValueBeforeChange.length ||
-    TestLogic.input.current !== inputValueBeforeChange.slice(0, TestLogic.input.current.length)
+    event.target.value.length >= inputValueBeforeChange.length ||
+    event.target.value !== inputValueBeforeChange.slice(0, event.target.value.length)
   ) {
     handleLastChar();
-  } else if (inputValueBeforeChange.length > 0) {
-    TestUI.updateWordElement();
-    Replay.addReplayEvent(
-      "setWordLetterIndex",
-      TestLogic.input.current.length
-    );
+  } else {
+    if (event.target.value === "") {
+      // fallback for when no Backspace keydown event (mobile)
+      event.target.value = " ";
+      backspaceToPrevious();
+      Replay.addReplayEvent("backWord");
+    } else {
+      TestUI.updateWordElement();
+      Replay.addReplayEvent(
+        "setWordLetterIndex",
+        TestLogic.input.current.length
+      );
+    }
   }
 
   setTimeout(Caret.updatePosition, 0);

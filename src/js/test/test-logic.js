@@ -132,11 +132,11 @@ class InputWordList {
 
 class InputWordListBound extends InputWordList {
   get current() {
-    return $("#wordsInput").val().normalize();
+    return $("#wordsInput").val().normalize().slice(1);
   }
 
   set current(val) {
-    $("#wordsInput").val(val.normalize());
+    $("#wordsInput").val(" " + val.normalize());
   }
 }
 
