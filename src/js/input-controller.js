@@ -754,6 +754,19 @@ $(document).keydown(function (event) {
   ) {
     TestStats.incrementKeypressMod();
   }
+
+  if (
+    Config.layout !== "default" &&
+    wordsFocused &&
+    !TestLogic.resultVisible &&
+    !TestLogic.resultCalculating
+  ) {
+    const char = LayoutEmulator.getCharFromEvent(event);
+    if (char !== null) {
+      event.preventDefault();
+      triggerInputWith(char);
+    }
+  }
 });
 
 function triggerInputWith(string) {
