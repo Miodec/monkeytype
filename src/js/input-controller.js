@@ -349,6 +349,51 @@ function handleSpace() {
   }
 }
 
+function isCharCorrect(char) {
+  if (Config.mode == "zen") {
+    return true;
+  }
+
+  const originalChar = TestLogic.words
+    .getCurrent()
+    .charAt(TestLogic.input.current.length - 1);
+
+  if (originalChar == char) {
+    return true;
+  }
+
+  if (Config.language.split("_")[0] == "russian") {
+    if ((char === "е" || char === "e") && originalChar == "ё") {
+      return true;
+    }
+    if (char === "ё" && (originalChar == "е" || originalChar === "e")) {
+      return true;
+    }
+  }
+
+  if (char === "’" && originalChar == "'") {
+    return true;
+  }
+
+  if (char === "'" && originalChar == "’") {
+    return true;
+  }
+
+  if (char === "”" && originalChar == '"') {
+    return true;
+  }
+
+  if (char === '"' && originalChar == "”") {
+    return true;
+  }
+
+  if ((char === "–" || char === "—") && originalChar == "-") {
+    return true;
+  }
+
+  return false;
+}
+
 function handleLastChar() {
   if (TestUI.resultCalculating || TestUI.resultVisible) {
     TestLogic.input.dropLastChar();
@@ -392,66 +437,7 @@ function handleLastChar() {
   Focus.set(true);
   Caret.stopAnimation();
 
-  //check if the char typed was correct
-  let thisCharCorrect;
-  let nextCharInWord;
-  if (Config.mode != "zen") {
-    nextCharInWord = TestLogic.words
-      .getCurrent()
-      .substring(
-        TestLogic.input.current.length,
-        TestLogic.input.current.length + 1
-      );
-  }
-
-  if (nextCharInWord == event["key"]) {
-    thisCharCorrect = true;
-  } else {
-    thisCharCorrect = false;
-  }
-
-  if (Config.language.split("_")[0] == "russian") {
-    if ((char === "е" || char === "e") && nextCharInWord == "ё") {
-      char = nextCharInWord;
-      thisCharCorrect = true;
-    }
-    if (
-      char === "ё" &&
-      (nextCharInWord == "е" || nextCharInWord === "e")
-    ) {
-      char = nextCharInWord;
-      thisCharCorrect = true;
-    }
-  }
-
-  if (Config.mode == "zen") {
-    thisCharCorrect = true;
-  }
-
-  if (char === "’" && nextCharInWord == "'") {
-    char = "'";
-    thisCharCorrect = true;
-  }
-
-  if (char === "'" && nextCharInWord == "’") {
-    char = "’";
-    thisCharCorrect = true;
-  }
-
-  if (char === "”" && nextCharInWord == '"') {
-    char = '"';
-    thisCharCorrect = true;
-  }
-
-  if (char === '"' && nextCharInWord == "”") {
-    char = "”";
-    thisCharCorrect = true;
-  }
-
-  if ((char === "–" || char === "—") && nextCharInWord == "-") {
-    char = "-";
-    thisCharCorrect = true;
-  }
+  let thisCharCorrect = isCharCorrect(char);
 
   if (!thisCharCorrect && Misc.trailingComposeChars.test(char)) return;
 
